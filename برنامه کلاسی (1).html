@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>برنامه کلاسی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #ececf0;
+  --text: #1d1d1f;
+  --text-2: #5f5f66;
+  --line: #e2e2e7;
+  --accent: #0a66d9;
+  --accent-soft: #e6f0fc;
+  --odd: #1c8a4a;
+  --odd-soft: #e5f5ea;
+  --even: #c8372d;
+  --even-soft: #fbe9e7;
+  --fixed: #0a66d9;
+  --fixed-soft: #e6f0fc;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 0 0 1px rgba(0,0,0,.03);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,.10), 0 0 0 1px rgba(10,102,217,.18);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --text: #f5f5f7; --text-2: #a1a1a8;
+    --line: #38383a; --accent: #4c9bff; --accent-soft: #14273f;
+    --odd: #46d17c; --odd-soft: #12301f; --even: #ff7a70; --even-soft: #3a1a17;
+    --fixed: #4c9bff; --fixed-soft: #14273f;
+    --shadow: 0 0 0 1px rgba(255,255,255,.05);
+    --shadow-hover: 0 8px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(76,155,255,.35);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --text: #f5f5f7; --text-2: #a1a1a8;
+  --line: #38383a; --accent: #4c9bff; --accent-soft: #14273f;
+  --odd: #46d17c; --odd-soft: #12301f; --even: #ff7a70; --even-soft: #3a1a17;
+  --fixed: #4c9bff; --fixed-soft: #14273f;
+  --shadow: 0 0 0 1px rgba(255,255,255,.05);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(76,155,255,.35);
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Vazirmatn", Tahoma, system-ui, -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+.app { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+h1 { font-size: 28px; font-weight: 700; margin: 8px 4px 4px; letter-spacing: -0.2px; }
+.sub { color: var(--text-2); margin: 0 4px 20px; font-size: 17px; }
+
+/* segmented controls */
+.seg {
+  display: flex; gap: 4px; padding: 4px;
+  background: var(--surface-2); border-radius: 14px;
+}
+.seg button {
+  flex: 1; border: 0; background: transparent; color: var(--text-2);
+  font: inherit; font-weight: 600; font-size: 17px;
+  padding: 10px 6px; border-radius: 11px; cursor: pointer;
+  transition: background .18s, color .18s, box-shadow .18s;
+  min-height: 46px;
+}
+.seg button:hover { color: var(--text); box-shadow: 0 2px 10px rgba(0,0,0,.10); background: var(--surface); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.14); }
+.seg button:focus-visible, .card:focus-visible, .wheel-item:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.seg.main { margin-bottom: 20px; }
+.seg.main button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg.main button:hover:not([aria-pressed="true"]) { background: var(--surface); }
+.seg.parity { margin-bottom: 18px; }
+.seg.parity button .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-inline-start: 6px; vertical-align: middle; }
+.dot.odd { background: var(--odd); } .dot.even { background: var(--even); } .dot.all { background: linear-gradient(90deg, var(--odd) 50%, var(--even) 50%); }
+
+.panel[hidden] { display: none; }
+
+/* wheel picker */
+.picker {
+  background: var(--surface); border-radius: 20px; box-shadow: var(--shadow);
+  padding: 8px 12px; position: relative; margin-bottom: 20px;
+}
+.wheels { display: flex; gap: 8px; position: relative; direction: rtl; }
+.wheel-wrap { flex: 1; position: relative; }
+.wheel-wrap.day { flex: .8; } .wheel-wrap.year { flex: .9; } .wheel-wrap.month { flex: 1.3; }
+.wheel {
+  height: 220px; overflow-y: scroll; scroll-snap-type: y mandatory;
+  padding: 88px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; position: relative; z-index: 2;
+  mask-image: linear-gradient(to bottom, transparent, #000 32%, #000 68%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 32%, #000 68%, transparent);
+}
+.wheel::-webkit-scrollbar { display: none; }
+.wheel-item {
+  height: 44px; display: flex; align-items: center; justify-content: center;
+  scroll-snap-align: center; font-size: 20px; font-weight: 500; color: var(--text-2);
+  cursor: pointer; transition: color .15s, font-size .15s; user-select: none;
+}
+.wheel-item.sel { color: var(--text); font-weight: 700; font-size: 22px; }
+.band {
+  position: absolute; inset-inline: 12px; top: 50%; height: 44px; transform: translateY(-50%);
+  background: var(--surface-2); border-radius: 12px; z-index: 1; pointer-events: none;
+}
+
+/* day header */
+.day-head {
+  background: var(--surface); border-radius: 20px; box-shadow: var(--shadow);
+  padding: 16px 18px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.day-head .title { font-size: 20px; font-weight: 700; margin: 0; }
+.day-head .meta { color: var(--text-2); font-size: 16px; margin: 2px 0 0; }
+.badge {
+  display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 16px; font-weight: 600; white-space: nowrap;
+}
+.badge.odd { background: var(--odd-soft); color: var(--odd); }
+.badge.even { background: var(--even-soft); color: var(--even); }
+.badge.fixed { background: var(--fixed-soft); color: var(--fixed); }
+
+/* class cards */
+.list { display: flex; flex-direction: column; gap: 10px; }
+.card {
+  background: var(--surface); border-radius: 18px; box-shadow: var(--shadow);
+  padding: 14px 16px; display: flex; gap: 14px; align-items: stretch;
+  transition: box-shadow .2s, transform .2s;
+}
+.card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.bar { width: 5px; border-radius: 5px; flex-shrink: 0; }
+.bar.fixed { background: var(--fixed); } .bar.odd { background: var(--odd); } .bar.even { background: var(--even); }
+.card .body { flex: 1; min-width: 0; }
+.card .time { color: var(--text-2); font-size: 16px; font-weight: 500; }
+.card .name { font-size: 19px; font-weight: 700; margin: 0; line-height: 1.5; }
+.card .teacher { color: var(--text-2); font-size: 16px; margin: 0 0 8px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.empty {
+  background: var(--surface); border-radius: 18px; box-shadow: var(--shadow);
+  padding: 28px 18px; text-align: center; color: var(--text-2); font-size: 18px;
+}
+.empty strong { display: block; color: var(--text); font-size: 20px; margin-bottom: 4px; }
+
+/* weekly */
+.week-day { margin-bottom: 22px; }
+.week-day h2 { font-size: 20px; font-weight: 700; margin: 0 4px 10px; display: flex; align-items: center; gap: 8px; }
+.week-day .none { color: var(--text-2); margin: 0 4px; font-size: 16px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin: -6px 4px 18px; font-size: 16px; color: var(--text-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+.chart-note { color: var(--text-2); font-weight: 500; font-size: 14px; }
+
+/* overview grid */
+.seg.viewsel { margin-bottom: 14px; }
+.grid-wrap {
+  background: var(--surface); border-radius: 18px; box-shadow: var(--shadow);
+  overflow-x: auto; overflow-y: hidden; margin-bottom: 18px;
+  -webkit-overflow-scrolling: touch;
+}
+table.grid-table { border-collapse: collapse; width: 100%; min-width: 640px; }
+table.grid-table th, table.grid-table td {
+  border: 1px solid var(--line); padding: 0; text-align: center; vertical-align: middle;
+}
+table.grid-table thead th {
+  background: var(--surface-2); color: var(--text-2); font-size: 13px; font-weight: 600;
+  padding: 10px 4px; white-space: nowrap; position: sticky; top: 0; z-index: 1;
+}
+table.grid-table thead th.corner { background: var(--surface); border: none; }
+table.grid-table td.daycell {
+  background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 14px;
+  padding: 10px 8px; white-space: nowrap; min-width: 92px;
+}
+table.grid-table td.cell { width: 96px; height: 64px; padding: 4px; }
+table.grid-table td.cell .fill {
+  height: 100%; width: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 11.5px; line-height: 1.35; font-weight: 600; padding: 4px; word-break: break-word;
+}
+.fill.var { background: var(--odd-soft); color: var(--odd); }
+.fill.fixed { background: var(--fixed-soft); color: var(--fixed); }
+.grid-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 4px 14px; font-size: 15px; color: var(--text-2); }
+.grid-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.grid-legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 380px) { .app { padding-inline: 12px; } .wheel-item { font-size: 18px; } .wheel-item.sel { font-size: 20px; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>برنامه کلاسی</h1>
+  <p class="sub">ترم اول ۱۴۰۵ ـ ۱۴۰۶</p>
+
+  <div class="seg main" role="group" aria-label="بخش‌ها">
+    <button id="tabToday" aria-pressed="true">امروز و تاریخ</button>
+    <button id="tabWeek" aria-pressed="false">برنامه هفتگی</button>
+  </div>
+
+  <!-- Side 1: date lookup -->
+  <section id="panelToday" class="panel">
+    <div class="picker" aria-label="انتخاب تاریخ">
+      <div class="wheels">
+        <div class="wheel-wrap day"><div class="wheel" id="wDay" aria-label="روز"></div></div>
+        <div class="wheel-wrap month"><div class="wheel" id="wMonth" aria-label="ماه"></div></div>
+        <div class="wheel-wrap year"><div class="wheel" id="wYear" aria-label="سال"></div></div>
+        <div class="band"></div>
+      </div>
+    </div>
+    <div id="dayResult"></div>
+  </section>
+
+  <!-- Side 2: weekly -->
+  <section id="panelWeek" class="panel" hidden>
+    <div class="seg viewsel" role="group" aria-label="نوع نمایش برنامه هفتگی">
+      <button id="viewGrid" data-view="grid" aria-pressed="true">نمای کلی</button>
+      <button id="viewList" data-view="list" aria-pressed="false">نمای کشویی</button>
+    </div>
+    <div class="seg parity" role="group" aria-label="نوع هفته">
+      <button data-p="odd" aria-pressed="false">هفته فرد<span class="dot odd"></span></button>
+      <button data-p="even" aria-pressed="false">هفته زوج<span class="dot even"></span></button>
+      <button data-p="all" aria-pressed="true">کلی<span class="dot all"></span></button>
+    </div>
+    <div id="weekGrid"></div>
+    <div id="weekResult" hidden></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- data ---------- */
+  var MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+  var WEEKDAYS = ["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+  var TERM_START = { y: 1405, m: 6, d: 21 };   // شنبه
+  var TERM_WEEKS = 17;
+  var LAST_DAY = { y: 1405, m: 10, d: 17 };
+
+  // day: 0=شنبه ... 5=پنجشنبه ; s/e = actual real meeting time in minutes (هر جلسه واقعی ۱ ساعت و ۳۰ دقیقه است)
+  // block = ایندکس زنگ ثابت دانشگاه (BLOCKS) که این جلسه داخل آن برگزار می‌شود
+  // chart = همان ساعتی که دانشگاه برای نشان دادن فرد/زوج بودن در چارت انتخاب واحد نوشته
+  function t(h, m) { return h * 60 + (m || 0); }
+  var BLOCKS = [
+    { s: t(8),     e: t(10),    label: "۸ تا ۱۰" },
+    { s: t(10),    e: t(11,30), label: "۱۰ تا ۱۱:۳۰" },
+    { s: t(11,30), e: t(13),    label: "۱۱:۳۰ تا ۱۳" },
+    { s: t(13),    e: t(15),    label: "۱۳ تا ۱۵" },
+    { s: t(15),    e: t(17),    label: "۱۵ تا ۱۷" },
+    { s: t(17),    e: t(19),    label: "۱۷ تا ۱۹" },
+    { s: t(19),    e: t(21),    label: "۱۹ تا ۲۱" }
+  ];
+  var COURSES = [
+    { name: "هوش مصنوعی و سیستم‌های خبره", teacher: "استاد امیرحسین شاه‌بخش رضوی", slots: [
+      { day: 2, block: 2, s: t(11,30), e: t(13),    kind: "var",   parity: "odd", chart: "۱۲:۱۵ تا ۱۳" },
+      { day: 2, block: 3, s: t(13),    e: t(14,30), kind: "fixed" } ] },
+    { name: "مهندسی نرم‌افزار", teacher: "استاد زهره واحدی", slots: [
+      { day: 5, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
+      { day: 5, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] },
+    { name: "طراحی سیستم‌های دیجیتال", teacher: "استاد سید عابد حسینی", slots: [
+      { day: 3, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
+      { day: 3, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] },
+    { name: "شبکه‌های کامپیوتری", teacher: "استاد سارا منصوری", slots: [
+      { day: 4, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
+      { day: 4, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] },
+    { name: "زبان تخصصی", teacher: "استاد محبوبه هوشمند کفاشیان", slots: [
+      { day: 2, block: 0, s: t(8),     e: t(9,30),  kind: "fixed" } ] },
+    { name: "پایگاه داده", teacher: "استاد الناز محرابی", slots: [
+      { day: 2, block: 5, s: t(17),    e: t(18,30), kind: "var",   parity: "even", chart: "۱۸ تا ۱۹" },
+      { day: 0, block: 4, s: t(15),    e: t(16,30), kind: "fixed" } ] },
+    { name: "اصول طراحی کامپایلر", teacher: "استاد شراره شهسوارپور", slots: [
+      { day: 1, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
+      { day: 1, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] }
+  ];
+
+  /* ---------- helpers ---------- */
+  var FA = "۰۱۲۳۴۵۶۷۸۹";
+  function fa(n) { return String(n).replace(/\d/g, function (d) { return FA[d]; }); }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function faTime(min) { return fa(Math.floor(min / 60) + ":" + pad(min % 60)); }
+  function monthLen(m) { return m <= 6 ? 31 : (m <= 11 ? 30 : 29); }
+  function ordinal(y, m, d) {
+    var before = m <= 6 ? (m - 1) * 31 : 186 + (m - 7) * 30;
+    return (y - 1405) * 365 + before + d;
+  }
+  var START_ORD = ordinal(TERM_START.y, TERM_START.m, TERM_START.d);
+  var LAST_ORD = ordinal(LAST_DAY.y, LAST_DAY.m, LAST_DAY.d);
+
+  function describe(y, m, d) {
+    var diff = ordinal(y, m, d) - START_ORD;
+    var weekday = ((diff % 7) + 7) % 7;
+    var inTerm = diff >= 0 && ordinal(y, m, d) <= LAST_ORD;
+    var week = inTerm ? Math.floor(diff / 7) + 1 : null;
+    var parity = inTerm ? (week % 2 === 1 ? "odd" : "even") : null;
+    return { weekday: weekday, inTerm: inTerm, week: week, parity: parity };
+  }
+
+  var WEEK_NAMES = ["", "اول","دوم","سوم","چهارم","پنجم","ششم","هفتم","هشتم","نهم","دهم","یازدهم","دوازدهم","سیزدهم","چهاردهم","پانزدهم","شانزدهم","هفدهم"];
+
+  function sessionsFor(day, parity) { // parity: 'odd' | 'even' | 'all'
+    var out = [];
+    COURSES.forEach(function (c) {
+      c.slots.forEach(function (s) {
+        if (s.day !== day) return;
+        if (s.kind === "var" && parity !== "all" && s.parity !== parity) return;
+        out.push({ course: c, slot: s });
+      });
+    });
+    out.sort(function (a, b) { return a.slot.s - b.slot.s; });
+    return out;
+  }
+
+  function cardHTML(item, showParityInVar) {
+    var s = item.slot;
+    var barCls = s.kind === "fixed" ? "fixed" : s.parity;
+    var tags = s.kind === "fixed"
+      ? '<span class="badge fixed">ثابت</span>'
+      : '<span class="badge ' + s.parity + '">متغیر' + (showParityInVar ? " ـ هفته " + (s.parity === "odd" ? "فرد" : "زوج") : "") + '</span>';
+    var chartNote = s.kind === "var" ? ' <span class="chart-note">(چارتی: ' + s.chart + ')</span>' : '';
+    return '<article class="card" tabindex="0"><div class="bar ' + barCls + '"></div><div class="body">' +
+      '<div class="time">' + faTime(s.s) + " تا " + faTime(s.e) + chartNote + '</div>' +
+      '<h3 class="name">' + item.course.name + '</h3>' +
+      '<p class="teacher">' + item.course.teacher + '</p>' +
+      '<div class="tags">' + tags + '</div></div></article>';
+  }
+
+  /* ---------- today's Jalali date ---------- */
+  function todayJalali() {
+    try {
+      var parts = new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn", { year: "numeric", month: "numeric", day: "numeric" }).formatToParts(new Date());
+      var o = {};
+      parts.forEach(function (p) { o[p.type] = parseInt(p.value, 10); });
+      if (o.year && o.month && o.day) return { y: o.year, m: o.month, d: o.day };
+    } catch (e) {}
+    return null;
+  }
+
+  /* ---------- valid ranges ---------- */
+  function yearList() { return [1405, 1406]; }
+  function monthList(y) {
+    var a = [], from = y === 1405 ? 6 : 1, to = y === 1405 ? 12 : 4; // 1406 ends at تیر
+    for (var m = from; m <= to; m++) a.push(m);
+    return a;
+  }
+  function dayList(y, m) {
+    var a = [], from = (y === 1405 && m === 6) ? 21 : 1;
+    for (var d = from; d <= monthLen(m); d++) a.push(d);
+    return a;
+  }
+
+  /* ---------- wheel ---------- */
+  var ITEM_H = 44;
+  function Wheel(el, onChange) {
+    this.el = el; this.onChange = onChange; this.values = []; this.index = 0; this.timer = null; this.silent = false;
+    var self = this;
+    el.addEventListener("scroll", function () {
+      if (self.silent) return;
+      clearTimeout(self.timer);
+      self.timer = setTimeout(function () {
+        var i = Math.round(el.scrollTop / ITEM_H);
+        i = Math.max(0, Math.min(self.values.length - 1, i));
+        if (i !== self.index) { self.index = i; self.paint(); self.onChange(self.values[i]); }
+      }, 90);
+    }, { passive: true });
+    el.addEventListener("click", function (e) {
+      var it = e.target.closest(".wheel-item");
+      if (!it) return;
+      self.scrollTo(parseInt(it.getAttribute("data-i"), 10), true);
+    });
+  }
+  Wheel.prototype.set = function (values, labelFn, selected) {
+    this.values = values; this.labelFn = labelFn;
+    var idx = values.indexOf(selected); if (idx < 0) idx = 0;
+    this.index = idx;
+    this.el.innerHTML = values.map(function (v, i) {
+      return '<div class="wheel-item" data-i="' + i + '">' + labelFn(v) + '</div>';
+    }).join("");
+    this.paint();
+    var self = this;
+    this.silent = true;
+    this.el.scrollTop = idx * ITEM_H;
+    setTimeout(function () { self.silent = false; }, 120);
+  };
+  Wheel.prototype.paint = function () {
+    var items = this.el.children, i;
+    for (i = 0; i < items.length; i++) items[i].classList.toggle("sel", i === this.index);
+  };
+  Wheel.prototype.scrollTo = function (i, smooth) {
+    this.el.scrollTo({ top: i * ITEM_H, behavior: smooth ? "smooth" : "auto" });
+  };
+
+  /* ---------- state ---------- */
+  var today = todayJalali();
+  var sel = { y: 1405, m: 6, d: 21 };
+  if (today && ordinal(today.y, today.m, today.d) >= START_ORD &&
+      (today.y === 1405 || (today.y === 1406 && today.m <= 4))) {
+    sel = { y: today.y, m: today.m, d: today.d };
+  }
+
+  var wDay = new Wheel(document.getElementById("wDay"), function (d) { sel.d = d; renderDay(); });
+  var wMonth = new Wheel(document.getElementById("wMonth"), function (m) {
+    sel.m = m; refreshDays(true); renderDay();
+  });
+  var wYear = new Wheel(document.getElementById("wYear"), function (y) {
+    sel.y = y; refreshMonths(true); refreshDays(true); renderDay();
+  });
+
+  function refreshYears() { wYear.set(yearList(), fa, sel.y); }
+  function refreshMonths(clamp) {
+    var ms = monthList(sel.y);
+    if (clamp && ms.indexOf(sel.m) < 0) sel.m = sel.y === 1405 ? 6 : 4;
+    wMonth.set(ms, function (m) { return MONTHS[m - 1]; }, sel.m);
+  }
+  function refreshDays(clamp) {
+    var ds = dayList(sel.y, sel.m);
+    if (clamp && ds.indexOf(sel.d) < 0) {
+      sel.d = sel.d < ds[0] ? ds[0] : ds[ds.length - 1];
+    }
+    wDay.set(ds, fa, sel.d);
+  }
+
+  /* ---------- render: date lookup ---------- */
+  function renderDay() {
+    var info = describe(sel.y, sel.m, sel.d);
+    var box = document.getElementById("dayResult");
+    var dateStr = WEEKDAYS[info.weekday] + " " + fa(sel.d) + " " + MONTHS[sel.m - 1] + " " + fa(sel.y);
+    var html = "";
+
+    if (!info.inTerm) {
+      html = '<div class="day-head"><div><p class="title">' + dateStr + '</p><p class="meta">خارج از هفته‌های کلاسی ترم</p></div></div>' +
+             '<div class="empty"><strong>کلاسی ندارید</strong>هفته‌های کلاسی ترم تا ' + fa(LAST_DAY.d) + " " + MONTHS[LAST_DAY.m - 1] + " " + fa(LAST_DAY.y) + ' بود.</div>';
+      box.innerHTML = html; return;
+    }
+
+    var pLabel = info.parity === "odd" ? "هفته فرد" : "هفته زوج";
+    html += '<div class="day-head"><div><p class="title">' + dateStr + '</p>' +
+            '<p class="meta">هفته ' + WEEK_NAMES[info.week] + " ترم (" + fa(info.week) + ')</p></div>' +
+            '<span class="badge ' + info.parity + '">' + pLabel + '</span></div>';
+
+    if (info.weekday === 6) {
+      html += '<div class="empty"><strong>جمعه است</strong>کلاسی ندارید.</div>';
+    } else {
+      var items = sessionsFor(info.weekday, info.parity);
+      if (!items.length) {
+        html += '<div class="empty"><strong>این روز کلاسی ندارید</strong>' + WEEKDAYS[info.weekday] + "‌ها در " + pLabel + ' برنامه‌ای نیست.</div>';
+      } else {
+        html += '<div class="list">' + items.map(function (it) { return cardHTML(it, false); }).join("") + '</div>';
+      }
+    }
+    box.innerHTML = html;
+  }
+
+  /* ---------- render: weekly ---------- */
+  var weekParity = "all";
+  var weekView = "grid";
+
+  function slotForCell(day, blockIndex, parity) {
+    var found = null;
+    COURSES.forEach(function (c) {
+      c.slots.forEach(function (s) {
+        if (s.day !== day || s.block !== blockIndex) return;
+        if (s.kind === "var" && parity !== "all" && s.parity !== parity) return;
+        found = { course: c, slot: s };
+      });
+    });
+    return found;
+  }
+
+  function renderWeekList() {
+    var box = document.getElementById("weekResult");
+    var html = "";
+    if (weekParity === "all") {
+      html += '<div class="legend"><span><i style="background:var(--fixed)"></i>ثابت</span>' +
+              '<span><i style="background:var(--odd)"></i>متغیر فرد</span>' +
+              '<span><i style="background:var(--even)"></i>متغیر زوج</span></div>';
+    }
+    for (var d = 0; d <= 5; d++) {
+      var items = sessionsFor(d, weekParity);
+      html += '<div class="week-day"><h2>' + WEEKDAYS[d] + '</h2>';
+      if (!items.length) html += '<p class="none">بدون کلاس</p>';
+      else html += '<div class="list">' + items.map(function (it) { return cardHTML(it, weekParity === "all"); }).join("") + '</div>';
+      html += '</div>';
+    }
+    box.innerHTML = html;
+  }
+
+  function renderWeekGrid() {
+    var box = document.getElementById("weekGrid");
+    var html = '<div class="grid-legend"><span><i style="background:var(--fixed)"></i>ثابت</span>' +
+                '<span><i style="background:var(--odd)"></i>متغیر</span></div>';
+    html += '<div class="grid-wrap"><table class="grid-table"><thead><tr><th class="corner"></th>' +
+      BLOCKS.map(function (b) { return '<th>' + b.label + '</th>'; }).join('') + '</tr></thead><tbody>';
+    for (var d = 0; d <= 5; d++) {
+      html += '<tr><td class="daycell">' + WEEKDAYS[d] + '</td>';
+      for (var bi = 0; bi < BLOCKS.length; bi++) {
+        var item = slotForCell(d, bi, weekParity);
+        if (item) {
+          var cls = item.slot.kind === "fixed" ? "fixed" : "var";
+          html += '<td class="cell"><div class="fill ' + cls + '">' + item.course.name + '</div></td>';
+        } else {
+          html += '<td class="cell"></td>';
+        }
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    box.innerHTML = html;
+  }
+
+  function renderWeek() {
+    document.getElementById("weekGrid").hidden = weekView !== "grid";
+    document.getElementById("weekResult").hidden = weekView !== "list";
+    if (weekView === "grid") renderWeekGrid(); else renderWeekList();
+    document.querySelectorAll(".seg.parity button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-p") === weekParity ? "true" : "false");
+    });
+    document.querySelectorAll(".seg.viewsel button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-view") === weekView ? "true" : "false");
+    });
+  }
+
+  /* ---------- tabs ---------- */
+  var tabToday = document.getElementById("tabToday"), tabWeek = document.getElementById("tabWeek");
+  function showTab(which) {
+    var isToday = which === "today";
+    document.getElementById("panelToday").hidden = !isToday;
+    document.getElementById("panelWeek").hidden = isToday;
+    tabToday.setAttribute("aria-pressed", isToday ? "true" : "false");
+    tabWeek.setAttribute("aria-pressed", isToday ? "false" : "true");
+    if (isToday) { // re-sync wheels after being hidden
+      refreshYears(); refreshMonths(false); refreshDays(false);
+    } else {
+      renderWeek();
+    }
+  }
+  tabToday.addEventListener("click", function () { showTab("today"); });
+  tabWeek.addEventListener("click", function () { showTab("week"); });
+  document.querySelectorAll(".seg.parity button").forEach(function (b) {
+    b.addEventListener("click", function () { weekParity = b.getAttribute("data-p"); renderWeek(); });
+  });
+  document.querySelectorAll(".seg.viewsel button").forEach(function (b) {
+    b.addEventListener("click", function () { weekView = b.getAttribute("data-view"); renderWeek(); });
+  });
+
+  /* ---------- init ---------- */
+  refreshYears(); refreshMonths(false); refreshDays(false); renderDay();
+  var cur = describe(sel.y, sel.m, sel.d);
+  if (cur.inTerm) weekParity = "all";
+  renderWeek();
+})();
+</script>
+</body>
+</html>
