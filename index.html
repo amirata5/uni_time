@@ -125,6 +125,9 @@ h1 { font-size: 28px; font-weight: 700; margin: 8px 4px 4px; letter-spacing: -0.
 .badge.odd { background: var(--odd-soft); color: var(--odd); }
 .badge.even { background: var(--even-soft); color: var(--even); }
 .badge.fixed { background: var(--fixed-soft); color: var(--fixed); }
+.badge.room { background: var(--surface-2); color: var(--text); }
+.badge.room.warn { background: var(--even-soft); color: var(--even); }
+.badge.room.todo { background: var(--surface-2); color: var(--text-2); font-style: normal; }
 
 /* class cards */
 .list { display: flex; flex-direction: column; gap: 10px; }
@@ -176,11 +179,13 @@ table.grid-table td.daycell {
   background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 14px;
   padding: 10px 8px; white-space: nowrap; min-width: 92px;
 }
-table.grid-table td.cell { width: 96px; height: 64px; padding: 4px; }
+table.grid-table td.cell { width: 96px; height: 68px; padding: 4px; }
+table.grid-table td.cell .cell-stack { height: 100%; width: 100%; display: flex; flex-direction: column; gap: 3px; }
 table.grid-table td.cell .fill {
-  height: 100%; width: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: center;
-  font-size: 11.5px; line-height: 1.35; font-weight: 600; padding: 4px; word-break: break-word;
+  flex: 1; width: 100%; border-radius: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 11px; line-height: 1.3; font-weight: 600; padding: 3px; word-break: break-word;
 }
+.fill .room { font-weight: 500; opacity: .8; font-size: 10px; }
 .fill.var { background: var(--odd-soft); color: var(--odd); }
 .fill.fixed { background: var(--fixed-soft); color: var(--fixed); }
 .grid-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 4px 14px; font-size: 15px; color: var(--text-2); }
@@ -256,25 +261,25 @@ table.grid-table td.cell .fill {
   ];
   var COURSES = [
     { name: "هوش مصنوعی و سیستم‌های خبره", teacher: "استاد امیرحسین شاه‌بخش رضوی", slots: [
-      { day: 2, block: 2, s: t(11,30), e: t(13),    kind: "var",   parity: "odd", chart: "۱۲:۱۵ تا ۱۳" },
-      { day: 2, block: 3, s: t(13),    e: t(14,30), kind: "fixed" } ] },
-    { name: "مهندسی نرم‌افزار", teacher: "استاد زهره واحدی", slots: [
-      { day: 5, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
-      { day: 5, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] },
+      { day: 2, block: 2, s: t(11,30), e: t(13),    kind: "var",   parity: "odd", chart: "۱۲:۱۵ تا ۱۳", room: "A16" },
+      { day: 2, block: 3, s: t(13),    e: t(14,30), kind: "fixed", room: "A16" } ] },
+    { name: "مهندسی نرم‌افزار", teacher: "استاد سمیرا سروین", slots: [
+      { day: 2, block: 4, s: t(15),    e: t(16,30), kind: "fixed", room: "" },
+      { day: 2, block: 5, s: t(17),    e: t(18,30), kind: "var",   parity: "odd", chart: "۱۷ تا ۱۸", room: "" } ] },
     { name: "طراحی سیستم‌های دیجیتال", teacher: "استاد سید عابد حسینی", slots: [
-      { day: 3, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
-      { day: 3, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] },
+      { day: 3, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰", room: "B16" },
+      { day: 3, block: 2, s: t(11,30), e: t(13),    kind: "fixed", room: "B16" } ] },
     { name: "شبکه‌های کامپیوتری", teacher: "استاد سارا منصوری", slots: [
-      { day: 4, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
-      { day: 4, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] },
+      { day: 4, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰", room: "E12" },
+      { day: 4, block: 2, s: t(11,30), e: t(13),    kind: "fixed", room: "E12" } ] },
     { name: "زبان تخصصی", teacher: "استاد محبوبه هوشمند کفاشیان", slots: [
-      { day: 2, block: 0, s: t(8),     e: t(9,30),  kind: "fixed" } ] },
+      { day: 2, block: 0, s: t(8),     e: t(9,30),  kind: "fixed", room: "D20" } ] },
     { name: "پایگاه داده", teacher: "استاد الناز محرابی", slots: [
-      { day: 2, block: 5, s: t(17),    e: t(18,30), kind: "var",   parity: "even", chart: "۱۸ تا ۱۹" },
-      { day: 0, block: 4, s: t(15),    e: t(16,30), kind: "fixed" } ] },
+      { day: 2, block: 5, s: t(17),    e: t(18,30), kind: "var",   parity: "even", chart: "۱۸ تا ۱۹", room: null, roomUnknown: true },
+      { day: 0, block: 4, s: t(15),    e: t(16,30), kind: "fixed", room: "B12" } ] },
     { name: "اصول طراحی کامپایلر", teacher: "استاد شراره شهسوارپور", slots: [
-      { day: 1, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰" },
-      { day: 1, block: 2, s: t(11,30), e: t(13),    kind: "fixed" } ] }
+      { day: 1, block: 1, s: t(10),    e: t(11,30), kind: "var",   parity: "odd", chart: "۱۰:۴۵ تا ۱۱:۳۰", room: "D20" },
+      { day: 1, block: 2, s: t(11,30), e: t(13),    kind: "fixed", room: "D20" } ] }
   ];
 
   /* ---------- helpers ---------- */
@@ -321,11 +326,16 @@ table.grid-table td.cell .fill {
       ? '<span class="badge fixed">ثابت</span>'
       : '<span class="badge ' + s.parity + '">متغیر' + (showParityInVar ? " ـ هفته " + (s.parity === "odd" ? "فرد" : "زوج") : "") + '</span>';
     var chartNote = s.kind === "var" ? ' <span class="chart-note">(چارتی: ' + s.chart + ')</span>' : '';
+    var roomTag = s.roomUnknown
+      ? '<span class="badge room warn">کد کلاس متغیر است</span>'
+      : s.room
+        ? '<span class="badge room">کد: ' + s.room + '</span>'
+        : '<span class="badge room todo">کد: —</span>';
     return '<article class="card" tabindex="0"><div class="bar ' + barCls + '"></div><div class="body">' +
       '<div class="time">' + faTime(s.s) + " تا " + faTime(s.e) + chartNote + '</div>' +
       '<h3 class="name">' + item.course.name + '</h3>' +
       '<p class="teacher">' + item.course.teacher + '</p>' +
-      '<div class="tags">' + tags + '</div></div></article>';
+      '<div class="tags">' + tags + roomTag + '</div></div></article>';
   }
 
   /* ---------- today's Jalali date ---------- */
@@ -458,13 +468,13 @@ table.grid-table td.cell .fill {
   var weekParity = "all";
   var weekView = "grid";
 
-  function slotForCell(day, blockIndex, parity) {
-    var found = null;
+  function slotsForCell(day, blockIndex, parity) {
+    var found = [];
     COURSES.forEach(function (c) {
       c.slots.forEach(function (s) {
         if (s.day !== day || s.block !== blockIndex) return;
         if (s.kind === "var" && parity !== "all" && s.parity !== parity) return;
-        found = { course: c, slot: s };
+        found.push({ course: c, slot: s });
       });
     });
     return found;
@@ -497,10 +507,14 @@ table.grid-table td.cell .fill {
     for (var d = 0; d <= 5; d++) {
       html += '<tr><td class="daycell">' + WEEKDAYS[d] + '</td>';
       for (var bi = 0; bi < BLOCKS.length; bi++) {
-        var item = slotForCell(d, bi, weekParity);
-        if (item) {
-          var cls = item.slot.kind === "fixed" ? "fixed" : "var";
-          html += '<td class="cell"><div class="fill ' + cls + '">' + item.course.name + '</div></td>';
+        var items = slotsForCell(d, bi, weekParity);
+        if (items.length) {
+          var fills = items.map(function (item) {
+            var cls = item.slot.kind === "fixed" ? "fixed" : "var";
+            var roomTxt = item.slot.roomUnknown ? "کد متغیر" : (item.slot.room ? "کد " + item.slot.room : "کد —");
+            return '<div class="fill ' + cls + '"><span>' + item.course.name + '</span><span class="room">' + roomTxt + '</span></div>';
+          }).join("");
+          html += '<td class="cell"><div class="cell-stack">' + fills + '</div></td>';
         } else {
           html += '<td class="cell"></td>';
         }
